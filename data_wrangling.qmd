@@ -1,0 +1,271 @@
+---
+title: "Exploring nutrition status- data wrangling"
+author: "Eric Anku"
+format: html
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r import-libraries}
+# Import libraries
+pacman::p_load(
+        tidyverse, # Data wrangling and plotting
+        googlesheets4, # Import dataset
+        anthro, # Prevalence and z-scores
+        gtsummary, # Table summaries
+        ggstatsplot, # Exploratory plots
+        GGally, # Scatterplot matrix
+        statsr, # Inferential statistics
+        skimr, # Statistical summary
+        finalfit, # Labelling, glimpse, and modelling
+        janitor, # Data cleaning
+        broom, # Tidy data output
+        rstatix, # Normality test
+        here
+
+)
+```
+
+
+## Import dataset
+
+```{r import-dataset}
+gs4_auth("nutrition.ccth@gmail.com")
+child <- read_sheet("https://docs.google.com/spreadsheets/d/1yL53EdTsd5fbDmAHltv79TFbVULi4KfxYXmRXA2njYA/edit?usp=sharing",
+           col_names = c(
+                   "meta_data",
+                   "dob",
+                   "dov",
+                   "age",
+                   "name",
+                   "sex",
+                   "bwt",
+                   "weight",
+                   "lenhei"
+           ),
+           col_types = "?DDdccddd",
+           skip = 1)
+```
+
+
+
+## Assess dataset
+
+- Assess for duplicates
+- Assess for missingness
+- Data types
+- Unusual birth weight value {Check bwt: 304.0 kg}
+- Unusual weight value {Check weight: 95 kg}
+- Log transform numeric variables and assess normality
+
+
+```{r head-dataset}
+head(child)
+```
+
+```{r get-duplicates}
+child %>% 
+        get_dupes(name) # Assess duplicate names
+```
+
+
+
+```{r assess-weight-values}
+# Assess weight values for unusual values
+child%>%select(c(name, weight, dov))%>%filter(weight > 10)
+```
+
+```{r assess-birthweight-values}
+# Assess birthweight values for unusual values
+child%>%select(c(name, bwt, dov))%>%filter(bwt > 5)
+```
+
+
+```{r assess-lenhei-values}
+# Assess length/height values for unusual values
+child%>%select(c(name, lenhei, dov))%>%filter(lenhei > 95)
+
+## There are no issues with the length/height data
+```
+
+
+```{r assess-age-values}
+child%>%select(name, dov, age)%>%filter(age < 42)
+```
+
+
+```{r replace-wrong-birthweight-values}
+# Child 1 
+child$bwt[child$bwt == 42] <- 3.2
+
+# Child 2
+child$bwt[child$bwt == 182.6253] <- 4.0
+ 
+# Child 3
+child$bwt[child$bwt == 12.9] <- 2.9
+ 
+# Child 4
+child$bwt[child$bwt == 304] <- 3.2
+
+# Child 5
+child$bwt[child$bwt == 6.6] <- 3.6
+
+# Child 6
+child$bwt[child$bwt == 6] <- 3.0
+```
+
+```{r replace-wrong-weight-values}
+# Child 1 
+child$weight[child$weight == 86] <- 10.9
+
+# Child 2
+child$weight[child$weight == 70] <- 7.8
+ 
+# Child 3
+child$weight[child$weight == 95] <- 9.5
+ 
+# Child 4
+child$weight[child$weight == 64] <- 6.4
+
+# Child 5
+child$weight[child$weight == 42] <- 4.2
+
+# Child 6
+child$weight[child$weight == 55] <- 5.5
+
+# Child 7
+child$weight[child$weight == 50] <- 5.0
+
+# Child 8
+child$weight[child$weight == 59] <- 5.9
+
+# Child 9
+child$weight[child$weight == 2.3] <- 4.8
+
+# Child 10
+child$weight[child$weight == 1.60] <- 2.7
+```
+
+
+```{r replace-wrong-age-values}
+# Child 1 
+child$age[child$age == 14] <- 60.85
+
+# Child 2
+child$age[child$age == 35] <- 152.125
+ 
+# Child 3
+child$age[child$age == 14] <- 60.85
+ 
+# Child 4
+child$age[child$age == 35] <- 152.125
+
+# Child 5
+child$age[child$age == 28] <- 91.275
+
+# Child 6
+child$age[child$age == 30.4375] <- 42
+
+# Child 7
+child$age[child$age == 31.3125] <- 91.275
+
+# Child 8
+child$age[child$age == 30.4375] <- 42
+
+# Child 8
+child$age[child$age == 30.4375] <- 42
+
+# Child 9
+child$age[child$age == 38.4375] <- 42
+
+# Child 10
+child$age[child$age == 30.4375] <- 42
+
+# Child 11
+child$age[child$age == 30.4375] <- 42
+
+# Child 12
+child$age[child$age == 3.2] <- 42
+
+# Child 13
+child$age[child$age == 30.4375] <- 42
+```
+
+```{r replace-wrong-lenhei-values}
+# Child 1 
+child$lenhei[child$lenhei == 10.9] <- 86
+
+# Child 2
+child$lenhei[child$lenhei == 7.8] <- 78
+ 
+# Child 3
+child$lenhei[child$lenhei == 5.1] <- 51
+ 
+# Child 4
+child$lenhei[child$lenhei == 5.2] <- 52
+
+# Child 5
+child$lenhei[child$lenhei == 8.3] <- 83
+
+# Child 6
+child$lenhei[child$lenhei == 7.2] <- 72
+
+# Child 7
+child$lenhei[child$lenhei == 4.1] <- 41
+```
+
+
+```{r remove-duplicates}
+# Remove duplicate entries
+child%>%
+        distinct(name, .keep_all = TRUE)
+```
+
+
+```{r missing-data}
+# Assess missing data
+ff_glimpse(child)
+```
+
+
+```{r final-dataset}
+child_final <- child%>%
+        select(-c(
+                meta_data,
+                name,
+                dob,
+                dov
+        )) # De-identify dataset and remove variables not needed
+```
+
+
+## Clean dataset
+
+- Check for flagged children and verify their entries
+- Correct mistake entries 
+- Remove unusual weight, birthweight, length or height values
+- Log transform numeric variables to minimise skewness and verify normality
+
+```{r wrangle}
+child_final <- child_final%>%
+        mutate(
+                age = age%>%
+                        ff_label ("Age in days"),
+                sex = sex%>%
+                        ff_label("Sex"),
+                bwt = bwt%>%
+                        ff_label("Birth weight (kg)"),
+                weight = weight%>%
+                        ff_label("Weight (kg)"),
+                lenhei = lenhei%>%
+                        ff_label("Length/Height (cm)")
+        )
+```
+
+```{r export-data}
+export(child_final, here("data","cwc.csv"))
+```
+

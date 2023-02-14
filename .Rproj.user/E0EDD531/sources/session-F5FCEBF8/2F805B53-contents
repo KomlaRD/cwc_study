@@ -1,0 +1,225 @@
+---
+title: "Exploratory child growth data from child welfare clinic in Cape Coast Teaching Hospital: opportunities for improvement"
+author: "Eric Anku"
+date: "6/17/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r import-libraries}
+# Import libraries
+pacman::p_load(
+        tidyverse, # Data wrangling and plotting
+        googlesheets4, # Import dataset
+        anthro, # Prevalence and z-scores
+        gtsummary, # Table summaries
+        ggstatsplot, # Exploratory plots
+        GGally, # Scatterplot matrix
+        statsr, # Inferential statistics
+        skimr, # Statistical summary
+        finalfit, # Labelling, glimpse, and modelling
+        janitor, # Data cleaning
+        broom, # Tidy data output
+        psych # Assess skewness
+)
+```
+
+
+## Import dataset
+
+```{r import-dataset}
+gs4_auth("nutrition.ccth@gmail.com")
+child <- read_sheet("https://docs.google.com/spreadsheets/d/1yL53EdTsd5fbDmAHltv79TFbVULi4KfxYXmRXA2njYA/edit?usp=sharing",
+           col_names = c(
+                   "meta_data",
+                   "dob",
+                   "dov",
+                   "age",
+                   "name",
+                   "sex",
+                   "bwt",
+                   "weight",
+                   "lenhei"
+           ),
+           col_types = "?DDdccddd",
+           skip = 1)
+```
+
+
+
+## Assess dataset
+
+- Assess for duplicates
+- Assess for missingness
+- Data types
+- Unusual birth weight value {Check bwt: 304.0 kg}
+- Unusual weight value {Check weight: 95 kg}
+- Log transform numeric variables and assess normality
+
+
+```{r head-dataset}
+head(child)
+```
+
+```{r get-duplicates}
+child %>% 
+        get_dupes(name) # Assess duplicate names
+```
+
+
+
+```{r assess-weight-values}
+# Assess weight values for unusual values
+child%>%select(c(name, weight, dov))%>%filter(weight > 10)
+```
+
+```{r assess-birthweight-values}
+# Assess birthweight values for unusual values
+child%>%select(c(name, bwt, dov))%>%filter(bwt > 5)
+```
+
+
+```{r assess-lenhei-values}
+# Assess length/height values for unusual values
+child%>%select(c(name, lenhei, dov))%>%filter(lenhei > 95)
+```
+
+
+```{r remove-duplicates}
+# Remove duplicate entries
+child%>%
+        distinct(name, .keep_all = TRUE)
+```
+
+
+```{r missing-data}
+# Assess missing data
+ff_glimpse(child)
+```
+
+
+```{r final-dataset}
+child_final <- child%>%
+        select(-c(
+                meta_data,
+                name,
+                dob,
+                dov
+        )) # De-identify dataset and remove variables not needed
+```
+
+
+## Clean dataset
+
+- Check for flagged children and verify their entries
+- Correct mistake entries 
+- Remove unusual weight, birthweight, length or height values
+- Log transform numeric variables to minimise skewness and verify normality
+
+```{r wrangle}
+child_final <- child_final%>%
+        mutate(
+                age = age%>%
+                        ff_label ("Age in days"),
+                sex = sex%>%
+                        ff_label("Sex"),
+                bwt = bwt%>%
+                        ff_label("Birth weight (kg)"),
+                weight = weight%>%
+                        ff_label("Weight (kg)"),
+                lenhei = lenhei%>%
+                        ff_label("Length/Height (cm)")
+        )
+```
+
+```{r replace-unusual-values}
+
+```
+
+
+```{r skim-dataset}
+# Skim dataset
+skim(child_final)
+```
+
+
+```{r check-skewness, eval = FALSE}
+# Check for skewness
+describe(child_final)
+```
+
+
+```{r assess-normality}
+print("Normality of age")
+shapiro.test(child_final$age)
+
+print("Normality of birth weight")
+shapiro.test(child_final$bwt)
+
+print("Normality of weight")
+shapiro.test(child_final$weight)
+
+print("Normality of length/height")
+shapiro.test(child_final$lenhei)
+```
+
+
+
+```{r prevalence}
+# Prevalence 
+prevalence<- anthro_prevalence(
+                sex = child_final$sex,
+                age = child_final$age,
+                weight = child_final$weight,
+                lenhei = child_final$lenhei
+        )
+
+prevalence
+```
+
+
+```{r z-scores}
+z_score <- anthro_zscores(
+        sex = child_final$sex,
+                age = child_final$age,
+                weight = child_final$weight,
+                lenhei = child_final$lenhei
+)
+
+z_score
+```
+
+
+
+```{r replace-wrong-length-values}
+child%>%filter(name == "Boas Addae Manu")
+```
+
+## Methods
+
+Data collection began on 22nd June, 2022 using ODK collect. Data records were available from February, 2021 to June, 2022. Date of birth records were not recorded for ... children, however age was manually reported. Age reported in weeks was converted to age in days by multiplying age by 7. Age in months was aslo converted to age in dats by multiplying age by 30.4375. For children with date of birth data, age in days was calculated as date of visit minus date of birth. Data was first imported from ODK into a protected a googlesheet and later imported into R using the `googlesheets4` package. Imported dataset was assessed for duplicates and children with multiple entries were removed either due to entry errors or multiple visit. In the case of multiple visits, initial visit data was retained for that child. `Anthro` package in R was used to estimate prevalence and z-scores values. MUAC was not routinely assessed so this anthropometric measurement was not included in the dataset. 
+
+### Recommendations
+
+1. Growth assessment of children at CWC should include MUAC, head circumference and other vital growth assessment parameters to track the growth of children in the facility. 
+
+2. Maternal data should be aggregated to provide key insights on maternal factors associated with child growth outcomes.
+
+3. Data quality issues
+- We recommended data entry follows the WHO recommendations as spelt out in these two documents.
+- Data management software should be developed to store child growth data which can contribute to research and development as well as data-driven decisions with respect to public health.
+- Measuring child growth should be mandated training for public health nurses with collaborative effort from nutritionist in the facility.
+- The use of WHO Anthro and WHO Anthroplus software can be used to facilitate individual assessment of children which can aid in tracking the growth of these children.
+
+## Exploratory data analysis
+
+
+
+## Explanatory data analysis
+
+
+
+

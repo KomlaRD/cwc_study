@@ -1,0 +1,147 @@
+---
+title: "Exploring nutrition status- data analysis"
+author: "Eric Anku"
+format: html
+---
+
+```{r import-libraries}
+# Import libraries
+pacman::p_load(
+        tidyverse, # Data wrangling and plotting
+        googlesheets4, # Import dataset
+        anthro, # Prevalence and z-scores
+        gtsummary, # Table summaries
+        ggstatsplot, # Exploratory plots
+        GGally, # Scatterplot matrix
+        statsr, # Inferential statistics
+        skimr, # Statistical summary
+        finalfit, # Labelling, glimpse, and modelling
+        janitor, # Data cleaning
+        broom, # Tidy data output
+        rstatix, # Normality test
+        here
+
+)
+```
+
+```{r import-dataset}
+
+```
+
+
+
+```{r skim-dataset}
+# Skim dataset
+skim(child_final)
+```
+
+
+```{r check-skewness, eval = FALSE}
+# Check for skewness
+describe(child_final)
+```
+
+
+```{r normality-test}
+child_final%>%
+        shapiro_test(age,
+                     bwt,
+                     weight,
+                     lenhei)
+```
+
+
+
+```{r prevalence}
+# Prevalence 
+prevalence<- anthro_prevalence(
+                sex = child_final$sex,
+                age = child_final$age,
+                weight = child_final$weight,
+                lenhei = child_final$lenhei
+        )
+
+prevalence
+```
+
+
+```{r z-scores}
+z_score <- anthro_zscores(
+        sex = child_final$sex,
+                age = child_final$age,
+                weight = child_final$weight,
+                lenhei = child_final$lenhei
+)
+
+z_score
+```
+
+
+```{r}
+with(child_final,
+        anthro_zscores(
+        sex = child_final$sex,
+                age = child_final$age,
+                weight = child_final$weight,
+                lenhei = child_final$lenhei
+)
+)
+```
+
+
+
+```{r replace-wrong-length-values}
+child%>%filter(name == "Melcizadeck k. Nyamson")
+```
+
+## Methods
+
+Data collection began on 22nd June, 2022 using ODK collect. Data records were available from February, 2021 to June, 2022. Date of birth records were not recorded for ... children, however age was manually reported. Age reported in weeks was converted to age in days by multiplying age by 7. Age in months was aslo converted to age in dats by multiplying age by 30.4375. For children with date of birth data, age in days was calculated as date of visit minus date of birth. Data was first imported from ODK into a protected a googlesheet and later imported into R using the `googlesheets4` package. Imported dataset was assessed for duplicates and children with multiple entries were removed either due to entry errors or multiple visit. In the case of multiple visits, initial visit data was retained for that child. `Anthro` package in R was used to estimate prevalence and z-scores values. MUAC was not routinely assessed so this anthropometric measurement was not included in the dataset. 
+
+### Recommendations
+
+1. Growth assessment of children at CWC should include MUAC, head circumference and other vital growth assessment parameters to track the growth of children in the facility. 
+
+2. Maternal data should be aggregated to provide key insights on maternal factors associated with child growth outcomes.
+
+3. Data quality issues
+- We recommended data entry follows the WHO recommendations as spelt out in these two documents.
+- Data management software should be developed to store child growth data which can contribute to research and development as well as data-driven decisions with respect to public health.
+- Measuring child growth should be mandated training for public health nurses with collaborative effort from nutritionist in the facility.
+- The use of WHO Anthro and WHO Anthroplus software can be used to facilitate individual assessment of children which can aid in tracking the growth of these children.
+
+### Acknowledgements
+
+- Priscilla Appiah, Jessica Ampah, Perpetual Baidoo  (Data collection)
+
+## Exploratory data analysis
+
+
+```{r table-one}
+child_final%>%
+        tbl_summary(missing_text = "Missing data")
+```
+
+
+```{r}
+child_final%>%
+        tbl_summary(by = sex,
+                    missing_text = "Missing data")%>%
+        add_p(
+                # list(all_continuous() ~ "t.test")
+        )%>%
+        bold_p()%>%
+        bold_labels()
+```
+
+## Explanatory data analysis
+
+
+```{r}
+child%>%select(name, dov, weight)%>%filter(weight < 4)
+```
+
+```{r}
+child%>%select(name, dov, lenhei)%>%filter(lenhei < 40)
+```
+

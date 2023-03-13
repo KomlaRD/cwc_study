@@ -47,6 +47,20 @@ cwc <- cwc%>%
   )
 ```
 
+```{r labelling}
+cwc <- cwc%>%
+  mutate(
+    sex = ff_label(sex, "Sex"),
+    age_months = ff_label(age_months, "Age (months)"),
+    weight = ff_label(weight, "Weight (kg)"),
+    lenhei = ff_label(lenhei, "Length/Height (cm)"),
+    bwt = ff_label(bwt, "Birth weight (kg)"),
+    stunting = ff_label(stunting, "Stunting"),
+    wasting = ff_label(wasting, "Wasting"),
+    underweight = ff_label(underweight, "Underweight")
+  )
+```
+
 
 
 ```{r skim-dataset}
@@ -134,7 +148,9 @@ Data collection began on 22nd June, 2022 using ODK collect. Data records were av
 
 ```{r table-one}
 cwc%>%
-        tbl_summary(missing_text = "Missing data")
+  select(-c(age_days, age_days_float, Flag, BAZ,))%>%
+        tbl_summary(missing_text = "Missing data",
+                    statistic = list(c(weight, lenhei, bwt, WAZ, HAZ, WHZ) ~ "{mean} ({sd})"))%>%add_ci()
 ```
 
 

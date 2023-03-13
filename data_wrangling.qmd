@@ -24,7 +24,8 @@ pacman::p_load(
         janitor, # Data cleaning
         broom, # Tidy data output
         rstatix, # Normality test
-        here
+        here,
+        rio # Import and export
 
 )
 ```
@@ -220,7 +221,7 @@ child$lenhei[child$lenhei == 4.1] <- 41
 
 ```{r remove-duplicates}
 # Remove duplicate entries
-child%>%
+child <- child%>%
         distinct(name, .keep_all = TRUE)
 ```
 
@@ -265,7 +266,11 @@ child_final <- child_final%>%
         )
 ```
 
-```{r export-data}
+```{r export-data-csv}
 export(child_final, here("data","cwc.csv"))
+```
+
+```{r export-data-rdata}
+export(child_final, here("data","cwc.RData"))
 ```
 

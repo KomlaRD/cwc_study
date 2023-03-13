@@ -251,6 +251,7 @@ child_final <- child%>%
 - Log transform numeric variables to minimise skewness and verify normality
 
 ```{r wrangle}
+# TODO: Convert age in days into age in months
 child_final <- child_final%>%
         mutate(
                 age = age%>%
@@ -262,7 +263,9 @@ child_final <- child_final%>%
                 weight = weight%>%
                         ff_label("Weight (kg)"),
                 lenhei = lenhei%>%
-                        ff_label("Length/Height (cm)")
+                        ff_label("Length/Height (cm)"),
+                age_months = age/30.4375%>%
+                  ff_label("Age in months")
         )
 ```
 

@@ -19,20 +19,39 @@ pacman::p_load(
         janitor, # Data cleaning
         broom, # Tidy data output
         rstatix, # Normality test
-        here
+        here,
+        rio
 
 )
 ```
 
 ```{r import-dataset}
+cwc <- import(here("data", "cwc_anthro.csv"))
+```
 
+```{r malnutrition-category}
+cwc <- cwc%>%
+  mutate (
+    stunting = case_when(
+      HAZ < - 2 ~ "Stunting",
+      TRUE ~ "Normal"
+    ),
+    wasting = case_when(
+      WHZ < - 2 ~ "Wasting",
+      TRUE ~ "Normal"
+    ),
+    underweight = case_when(
+      WAZ < -2 ~ "Underweight",
+      TRUE ~ "Normal"
+    )
+  )
 ```
 
 
 
 ```{r skim-dataset}
 # Skim dataset
-skim(child_final)
+skim(cwc)
 ```
 
 
@@ -43,29 +62,30 @@ describe(child_final)
 
 
 ```{r normality-test}
-child_final%>%
-        shapiro_test(age,
+cwc%>%
+        shapiro_test(age_days,
                      bwt,
                      weight,
-                     lenhei)
+                     lenhei,
+                     age_months)
 ```
 
 
 
-```{r prevalence}
+```{r prevalence, eval=FALSE}
 # Prevalence 
 prevalence<- anthro_prevalence(
-                sex = child_final$sex,
-                age = child_final$age,
-                weight = child_final$weight,
-                lenhei = child_final$lenhei
+                sex = cwc$sex,
+                age = cwc$age_days,
+                weight = cwc$weight,
+                lenhei = cwc$lenhei
         )
 
 prevalence
 ```
 
 
-```{r z-scores}
+```{r z-scores, eval=FALSE}
 z_score <- anthro_zscores(
         sex = child_final$sex,
                 age = child_final$age,
@@ -77,7 +97,7 @@ z_score
 ```
 
 
-```{r}
+```{r eval=FALSE}
 with(child_final,
         anthro_zscores(
         sex = child_final$sex,
@@ -89,14 +109,9 @@ with(child_final,
 ```
 
 
-
-```{r replace-wrong-length-values}
-child%>%filter(name == "Melcizadeck k. Nyamson")
-```
-
 ## Methods
 
-Data collection began on 22nd June, 2022 using ODK collect. Data records were available from February, 2021 to June, 2022. Date of birth records were not recorded for ... children, however age was manually reported. Age reported in weeks was converted to age in days by multiplying age by 7. Age in months was aslo converted to age in dats by multiplying age by 30.4375. For children with date of birth data, age in days was calculated as date of visit minus date of birth. Data was first imported from ODK into a protected a googlesheet and later imported into R using the `googlesheets4` package. Imported dataset was assessed for duplicates and children with multiple entries were removed either due to entry errors or multiple visit. In the case of multiple visits, initial visit data was retained for that child. `Anthro` package in R was used to estimate prevalence and z-scores values. MUAC was not routinely assessed so this anthropometric measurement was not included in the dataset. 
+Data collection began on 22nd June, 2022 using ODK collect. Data records were available from February, 2021 to June, 2022. Date of birth records were not recorded for ... children, however age was manually reported. Age reported in weeks was converted to age in days by multiplying age by 7. Age in months was aslo converted to age in days by multiplying age by 30.4375. For children with date of birth data, age in days was calculated as date of visit minus date of birth. Data was first imported from ODK into a protected a googlesheet and later imported into R using the `googlesheets4` package. Imported dataset was assessed for duplicates and children with multiple entries were removed either due to entry errors or multiple visit. In the case of multiple visits, initial visit data was retained for that child. `Anthro` package in R was used to estimate prevalence and z-scores values. MUAC was not routinely assessed so this anthropometric measurement was not included in the dataset. 
 
 ### Recommendations
 
@@ -118,13 +133,13 @@ Data collection began on 22nd June, 2022 using ODK collect. Data records were av
 
 
 ```{r table-one}
-child_final%>%
+cwc%>%
         tbl_summary(missing_text = "Missing data")
 ```
 
 
 ```{r}
-child_final%>%
+cwc%>%
         tbl_summary(by = sex,
                     missing_text = "Missing data")%>%
         add_p(
@@ -136,12 +151,4 @@ child_final%>%
 
 ## Explanatory data analysis
 
-
-```{r}
-child%>%select(name, dov, weight)%>%filter(weight < 4)
-```
-
-```{r}
-child%>%select(name, dov, lenhei)%>%filter(lenhei < 40)
-```
 

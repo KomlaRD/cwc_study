@@ -4,6 +4,11 @@ author: "Eric Anku"
 format: docx
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+
 ```{r import-libraries}
 # Import libraries
 pacman::p_load(

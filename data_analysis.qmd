@@ -32,6 +32,7 @@ pacman::p_load(
 
 ```{r import-dataset}
 cwc <- import(here("data", "cwc_anthro.csv"))
+cwc_two <- import(here("data", "cwc_zscore.csv"))
 ```
 
 ```{r malnutrition-category}
@@ -51,6 +52,25 @@ cwc <- cwc%>%
     )
   )
 ```
+
+```{r malnutrition-who-analyser}
+cwc_two <- cwc_two%>%
+  mutate (
+    stunting = case_when(
+      zlen < - 2 ~ "Stunting",
+      TRUE ~ "Normal"
+    ),
+    wasting = case_when(
+      zwfl < - 2 ~ "Wasting",
+      TRUE ~ "Normal"
+    ),
+    underweight = case_when(
+      zwei < -2 ~ "Underweight",
+      TRUE ~ "Normal"
+    )
+  )
+```
+
 
 ```{r labelling}
 cwc <- cwc%>%

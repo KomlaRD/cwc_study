@@ -31,48 +31,62 @@ pacman::p_load(
 ```
 
 ```{r import-dataset}
-cwc <- import(here("data", "cwc_anthro.csv"))
-cwc_two <- import(here("data", "cwc_zscore.csv"))
+cwc <- import(here("data", "cwc_zscore.csv"))
 ```
+
+```{r cwc-two-remove-variables}
+cwc <- cwc%>%
+  select(-c(included, name, age_in_days, age_in_months, cmeasure, oedema, clenhei, cbmi, csex, zlen_flag,
+            zwei_flag, zbmi_flag, zwfl_flag, zbmi, age, age_group))
+```
+
+```{r factor-sex}
+cwc <- cwc%>%
+  mutate(
+    sex = factor(sex)%>%
+      fct_recode(
+        "Male" = "1",
+        "Female" = "2"
+      )
+  )
+```
+
 
 ```{r malnutrition-category}
 cwc <- cwc%>%
   mutate (
     stunting = case_when(
-      HAZ < - 2 ~ "Stunting",
-      TRUE ~ "Normal"
+      zlen < - 2 & zlen >= -6 ~ "Stunting",
+      zlen >= -2 & zlen <= 6 ~ "Normal",
+      TRUE ~ "Flag"
     ),
     wasting = case_when(
-      WHZ < - 2 ~ "Wasting",
-      TRUE ~ "Normal"
+      zwfl < - 2 & zwfl >= -5 ~ "Wasting",
+      zwfl >= -2 & zwfl <= 5 ~ "Normal",
+      TRUE ~ "Flag"
     ),
     underweight = case_when(
-      WAZ < -2 ~ "Underweight",
-      TRUE ~ "Normal"
+      zwei < -2 & zwei >= -6 ~ "Underweight",
+      zwei >= -2 & zwei <= 5 ~ "Normal",
+      TRUE ~ "Flag"
     )
   )
 ```
 
-```{r malnutrition-who-analyser}
-cwc_two <- cwc_two%>%
-  mutate (
-    stunting = case_when(
-      zlen < - 2 ~ "Stunting",
-      TRUE ~ "Normal"
-    ),
-    wasting = case_when(
-      zwfl < - 2 ~ "Wasting",
-      TRUE ~ "Normal"
-    ),
-    underweight = case_when(
-      zwei < -2 ~ "Underweight",
-      TRUE ~ "Normal"
-    )
+```{r remove-flags}
+cwc <- cwc%>%
+  mutate(
+    stunting = cwc%>%
+      filter(stunting != "Flag"),
+    wasting = cwc%>%
+      filter(wasting != "Flag"),
+    underweight = cwc%>%
+      filter(underweigh != "Flag")
   )
 ```
 
 
-```{r labelling}
+```{r labelling-cwc}
 cwc <- cwc%>%
   mutate(
     sex = ff_label(sex, "Sex"),
@@ -87,104 +101,27 @@ cwc <- cwc%>%
 ```
 
 
-
-```{r skim-dataset}
+```{r skim-dataset, eval=FALSE}
 # Skim dataset
 skim(cwc)
 ```
 
 
-```{r check-skewness, eval = FALSE}
-# Check for skewness
-describe(child_final)
-```
-
-
-```{r normality-test}
-cwc%>%
-        shapiro_test(age_days,
-                     bwt,
-                     weight,
-                     lenhei,
-                     age_months)
-```
-
-
-
-```{r prevalence, eval=FALSE}
-# Prevalence 
-prevalence<- anthro_prevalence(
-                sex = cwc$sex,
-                age = cwc$age_days,
-                weight = cwc$weight,
-                lenhei = cwc$lenhei
-        )
-
-prevalence
-```
-
-
-```{r z-scores, eval=FALSE}
-z_score <- anthro_zscores(
-        sex = child_final$sex,
-                age = child_final$age,
-                weight = child_final$weight,
-                lenhei = child_final$lenhei
-)
-
-z_score
-```
-
-
-```{r eval=FALSE}
-with(child_final,
-        anthro_zscores(
-        sex = child_final$sex,
-                age = child_final$age,
-                weight = child_final$weight,
-                lenhei = child_final$lenhei
-)
-)
-```
-
-
-## Methods
-
-Data collection began on 22nd June, 2022 using ODK collect. Data records were available from February, 2021 to June, 2022. Date of birth records were not recorded for ... children, however age was manually reported. Age reported in weeks was converted to age in days by multiplying age by 7. Age in months was aslo converted to age in days by multiplying age by 30.4375. For children with date of birth data, age in days was calculated as date of visit minus date of birth. Data was first imported from ODK into a protected a googlesheet and later imported into R using the `googlesheets4` package. Imported dataset was assessed for duplicates and children with multiple entries were removed either due to entry errors or multiple visit. In the case of multiple visits, initial visit data was retained for that child. `Anthro` package in R was used to estimate prevalence and z-scores values. MUAC was not routinely assessed so this anthropometric measurement was not included in the dataset. 
-
-### Recommendations
-
-1. Growth assessment of children at CWC should include MUAC, head circumference and other vital growth assessment parameters to track the growth of children in the facility. 
-
-2. Maternal data should be aggregated to provide key insights on maternal factors associated with child growth outcomes.
-
-3. Data quality issues
-- We recommended data entry follows the WHO recommendations as spelt out in these two documents.
-- Data management software should be developed to store child growth data which can contribute to research and development as well as data-driven decisions with respect to public health.
-- Measuring child growth should be mandated training for public health nurses with collaborative effort from nutritionist in the facility.
-- The use of WHO Anthro and WHO Anthroplus software can be used to facilitate individual assessment of children which can aid in tracking the growth of these children.
-
-### Acknowledgements
-
-- Priscilla Appiah, Jessica Ampah, Perpetual Baidoo  (Data collection)
-
-## Exploratory data analysis
+## Tables
 
 
 ```{r table-one}
 cwc%>%
-  select(-c(age_days, age_days_float, Flag, BAZ))%>%
         tbl_summary(missing_text = "Missing data",
-                    statistic = list(c(weight, lenhei, bwt, WAZ, HAZ, WHZ) ~ "{mean} ({sd})"))%>%add_ci()
+                    statistic = list(c(weight, lenhei, bwt, zwei, zlen, zwfl) ~ "{mean} ({sd})"))%>%add_ci()
 ```
 
 
 ```{r table_two}
 cwc%>%
-  select(-c(age_days, age_days_float, Flag, BAZ))%>%
         tbl_summary(by = sex,
                     missing_text = "Missing data",
-                     statistic = list(c(weight, lenhei, bwt, WAZ, HAZ, WHZ) ~ "{mean} ({sd})")
+                     statistic = list(c(weight, lenhei, bwt, zwei, zlen, zwfl) ~ "{mean} ({sd})")
                     )%>%
         add_p(
                 # list(all_continuous() ~ "t.test")
@@ -193,6 +130,6 @@ cwc%>%
         bold_labels()
 ```
 
-## Explanatory data analysis
+
 
 

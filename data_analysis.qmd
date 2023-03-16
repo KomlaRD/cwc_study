@@ -66,12 +66,12 @@ cwc <- cwc%>%
 ```{r remove-flags}
 cwc <- cwc%>%
   mutate(
-    stunting = cwc%>%
+    stunting_no_flag = cwc%>%
       filter(stunting != "Flag"),
-    wasting = cwc%>%
-      filter(wasting != "Flag"),
-    underweight = cwc%>%
-      filter(underweigh != "Flag")
+    wasting_no_flag = cwc%>%
+      filter),
+    underweight_no_flag = cwc%>%
+      filter(underweight != "Flag")
   )
 ```
 
@@ -96,6 +96,7 @@ cwc <- cwc%>%
 
 ```{r table-one}
 cwc%>%
+  filter(stunting != "Flag", wasting != "Flag", underweight != "Flag")%>%
         tbl_summary(missing_text = "Missing data",
                     statistic = list(c(weight, lenhei, bwt, zwei, zlen, zwfl) ~ "{mean} ({sd})"))%>%add_ci()
 ```
@@ -103,15 +104,15 @@ cwc%>%
 
 ```{r table_two}
 cwc%>%
+  filter(stunting != "Flag", wasting != "Flag", underweight != "Flag")%>%
         tbl_summary(by = sex,
                     missing_text = "Missing data",
                      statistic = list(c(weight, lenhei, bwt, zwei, zlen, zwfl) ~ "{mean} ({sd})")
                     )%>%
-        add_p(
-                # list(all_continuous() ~ "t.test")
-        )%>%
+        add_p()%>%
         bold_p()%>%
-        bold_labels()
+        bold_labels()%>%
+  add_overall()
 ```
 
 

@@ -135,5 +135,28 @@ cwc%>%
 ```
 
 
+```{r prevalence-tables-table-two}
+# Stunting
+cwc%>%
+  filter(stunting != "Flag")%>%
+  select(stunting, sex)%>%
+        tbl_summary(
+          by = sex, missing_text = "Missing data")%>%add_ci()%>%bold_labels()
+
+# Wasting
+cwc%>%
+  filter(wasting != "Flag")%>%
+  select(wasting, sex)%>%
+        tbl_summary(by = sex,
+                    missing_text = "Missing data")%>%add_ci()%>%bold_labels()
+
+#Underweight
+cwc%>%
+  filter(underweight != "Flag")%>%
+  select(underweight, sex)%>%
+        tbl_summary(by=sex,
+                    missing_text = "Missing data")%>%add_ci()%>%bold_labels()
+```
+
 
 

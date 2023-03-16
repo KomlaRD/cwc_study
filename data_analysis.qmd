@@ -1,5 +1,5 @@
 ---
-title: "Exploring nutrition status- data analysis"
+title: "Prevalence of undernutrition at a child welfare clinic of a tertiary hospital in Ghana"
 author: "Eric Anku"
 format: docx
 ---

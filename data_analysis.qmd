@@ -63,18 +63,6 @@ cwc <- cwc%>%
   )
 ```
 
-```{r remove-flags}
-cwc <- cwc%>%
-  mutate(
-    stunting_no_flag = cwc%>%
-      filter(stunting != "Flag"),
-    wasting_no_flag = cwc%>%
-      filter),
-    underweight_no_flag = cwc%>%
-      filter(underweight != "Flag")
-  )
-```
-
 
 ```{r labelling-cwc}
 cwc <- cwc%>%

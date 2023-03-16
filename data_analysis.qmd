@@ -14,9 +14,9 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 pacman::p_load(
         tidyverse, # Data wrangling and plotting
         gtsummary, # Table summaries
-        finalfit, # Labelling, glimpse, and modelling
+        finalfit, # Labeling, glimpse, and modelling
         here, # Directory manager
-        rio # Import dataset
+        rio # Import data set
 )
 ```
 
@@ -39,6 +39,11 @@ cwc <- cwc%>%
         "Female" = "2"
       )
   )
+```
+
+```{r relocate-age-to-front}
+cwc%>%
+  relocate(age_months)
 ```
 
 
@@ -84,7 +89,6 @@ cwc <- cwc%>%
 
 ```{r table-one}
 cwc%>%
-  filter(stunting != "Flag", wasting != "Flag", underweight != "Flag")%>%
         tbl_summary(missing_text = "Missing data",
                     statistic = list(c(weight, lenhei, bwt, zwei, zlen, zwfl) ~ "{mean} ({sd})"))%>%add_ci()
 ```
@@ -92,7 +96,6 @@ cwc%>%
 
 ```{r table_two}
 cwc%>%
-  filter(stunting != "Flag", wasting != "Flag", underweight != "Flag")%>%
         tbl_summary(by = sex,
                     missing_text = "Missing data",
                      statistic = list(c(weight, lenhei, bwt, zwei, zlen, zwfl) ~ "{mean} ({sd})")

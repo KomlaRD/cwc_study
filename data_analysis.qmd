@@ -13,20 +13,10 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 # Import libraries
 pacman::p_load(
         tidyverse, # Data wrangling and plotting
-        googlesheets4, # Import dataset
-        anthro, # Prevalence and z-scores
         gtsummary, # Table summaries
-        ggstatsplot, # Exploratory plots
-        GGally, # Scatterplot matrix
-        statsr, # Inferential statistics
-        skimr, # Statistical summary
         finalfit, # Labelling, glimpse, and modelling
-        janitor, # Data cleaning
-        broom, # Tidy data output
-        rstatix, # Normality test
-        here,
-        rio
-
+        here, # Directory manager
+        rio # Import dataset
 )
 ```
 
@@ -98,12 +88,6 @@ cwc <- cwc%>%
     wasting = ff_label(wasting, "Wasting"),
     underweight = ff_label(underweight, "Underweight")
   )
-```
-
-
-```{r skim-dataset, eval=FALSE}
-# Skim dataset
-skim(cwc)
 ```
 
 

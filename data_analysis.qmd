@@ -91,7 +91,7 @@ cwc <- cwc%>%
 cwc%>%
   filter(underweight != "Flag")%>%
         tbl_summary(missing_text = "Missing data",
-                    statistic = list(c(weight, lenhei, bwt, zwei, zlen, zwfl) ~ "{mean} ({sd})"))%>%add_ci()
+                    statistic = list(c(weight, lenhei, bwt, zwei, zlen, zwfl) ~ "{mean} ({sd})"))%>%add_ci()%>%bold_labels()
 ```
 
 

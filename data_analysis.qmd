@@ -42,7 +42,7 @@ cwc <- cwc%>%
 ```
 
 ```{r relocate-age-to-front}
-cwc%>%
+cwc <- cwc%>%
   relocate(age_months)
 ```
 
@@ -89,6 +89,7 @@ cwc <- cwc%>%
 
 ```{r table-one}
 cwc%>%
+  filter(underweight != "Flag")%>%
         tbl_summary(missing_text = "Missing data",
                     statistic = list(c(weight, lenhei, bwt, zwei, zlen, zwfl) ~ "{mean} ({sd})"))%>%add_ci()
 ```
@@ -100,7 +101,7 @@ cwc%>%
                     missing_text = "Missing data",
                      statistic = list(c(weight, lenhei, bwt, zwei, zlen, zwfl) ~ "{mean} ({sd})")
                     )%>%
-        add_p()%>%
+        add_p(list(c(weight, lenhei, bwt, zwei, zlen, zwfl) ~ "t.test"))%>%
         bold_p()%>%
         bold_labels()%>%
   add_overall()

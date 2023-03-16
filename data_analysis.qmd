@@ -21,16 +21,19 @@ pacman::p_load(
 ```
 
 ```{r import-dataset}
+# Import dataset
 cwc <- import(here("data", "cwc_zscore.csv"))
 ```
 
 ```{r cwc-two-remove-variables}
+# Remove redundant variables
 cwc <- cwc%>%
   select(-c(included, name, age_in_days, age_in_months, cmeasure, oedema, clenhei, cbmi, csex, zlen_flag,
             zwei_flag, zbmi_flag, zwfl_flag, zbmi, age, age_group))
 ```
 
 ```{r factor-sex}
+# Convert sex values into a factor
 cwc <- cwc%>%
   mutate(
     sex = factor(sex)%>%
@@ -42,12 +45,14 @@ cwc <- cwc%>%
 ```
 
 ```{r relocate-age-to-front}
+# Move age data to the front
 cwc <- cwc%>%
   relocate(age_months)
 ```
 
 
 ```{r malnutrition-category}
+# Categorise malnutrition status
 cwc <- cwc%>%
   mutate (
     stunting = case_when(
@@ -70,6 +75,7 @@ cwc <- cwc%>%
 
 
 ```{r labelling-cwc}
+# Label variables
 cwc <- cwc%>%
   mutate(
     sex = ff_label(sex, "Sex"),
@@ -88,10 +94,31 @@ cwc <- cwc%>%
 
 
 ```{r table-one}
+# Participant characteristics
 cwc%>%
-  filter(underweight != "Flag")%>%
+  select(-c(stunting, wasting, underweight))%>%
         tbl_summary(missing_text = "Missing data",
                     statistic = list(c(weight, lenhei, bwt, zwei, zlen, zwfl) ~ "{mean} ({sd})"))%>%add_ci()%>%bold_labels()
+```
+
+```{r prevalence-tables-table-one}
+# Stunting
+cwc%>%
+  filter(stunting != "Flag")%>%
+  select(stunting)%>%
+        tbl_summary(missing_text = "Missing data")%>%add_ci()%>%bold_labels()
+
+# Wasting
+cwc%>%
+  filter(wasting != "Flag")%>%
+  select(wasting)%>%
+        tbl_summary(missing_text = "Missing data")%>%add_ci()%>%bold_labels()
+
+#Underweight
+cwc%>%
+  filter(underweight != "Flag")%>%
+  select(underweight)%>%
+        tbl_summary(missing_text = "Missing data")%>%add_ci()%>%bold_labels()
 ```
 
 

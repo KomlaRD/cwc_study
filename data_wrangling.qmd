@@ -9,6 +9,7 @@ format: html
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
+
 ```{r import-libraries}
 # Import libraries
 pacman::p_load(
@@ -24,7 +25,7 @@ pacman::p_load(
         janitor, # Data cleaning
         broom, # Tidy data output
         rstatix, # Normality test
-        here,
+        here, # Directory management
         rio # Import and export
 
 )
@@ -34,7 +35,6 @@ pacman::p_load(
 ## Import dataset
 
 ```{r import-dataset}
-gs4_auth("nutrition.ccth@gmail.com")
 child <- read_sheet("https://docs.google.com/spreadsheets/d/1yL53EdTsd5fbDmAHltv79TFbVULi4KfxYXmRXA2njYA/edit?usp=sharing",
            col_names = c(
                    "meta_data",
@@ -71,7 +71,6 @@ head(child)
 child %>% 
         get_dupes(name) # Assess duplicate names
 ```
-
 
 
 ```{r assess-weight-values}
@@ -236,7 +235,6 @@ ff_glimpse(child)
 child_final <- child%>%
         select(-c(
                 meta_data,
-                name,
                 dob,
                 dov
         )) # De-identify dataset and remove variables not needed
@@ -251,11 +249,11 @@ child_final <- child%>%
 - Log transform numeric variables to minimise skewness and verify normality
 
 ```{r wrangle}
-# TODO: Convert age in days into age in months
 child_final <- child_final%>%
         mutate(
                 age = age%>%
                         ff_label ("Age in days"),
+                name = ff_label(name, "Name"),
                 sex = sex%>%
                         ff_label("Sex"),
                 bwt = bwt%>%
